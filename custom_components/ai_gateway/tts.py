@@ -11,33 +11,24 @@ from homeassistant.components.tts import (
     TtsAudioType,
     Voice,
 )
-from homeassistant.config_entries import ConfigSubentry
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers import device_registry as dr
 
 from .const import DOMAIN
 from .base import AIGatewayBaseEntity
-from .audio import generate_silence_wav
-
-if TYPE_CHECKING:
-    from . import AIGatewayConfigEntry
+from .audio import generate_sine_wav
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: AIGatewayConfigEntry,
+    entry: ConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Set up TTS entities."""
-    for subentry in config_entry.subentries.values():
-        if subentry.subentry_type != "tts":
-            continue
+    """Set up AI Gateway TTS."""
 
-        async_add_entities(
-            [AIGatewayTTSEntity(config_entry, subentry)],
-            config_subentry_id=subentry.subentry_id,
-        )
-
+    async_add_entities([AIGatewayTTSEntity(entry)])
 
 class AIGatewayTTSEntity(TextToSpeechEntity, AIGatewayBaseEntity):
     """Mock AI Gateway TTS entity."""
@@ -57,14 +48,18 @@ class AIGatewayTTSEntity(TextToSpeechEntity, AIGatewayBaseEntity):
         Voice("default", "Default"),
     ]
 
-    def __init__(
-        self,
-        entry: "AIGatewayConfigEntry",
-        subentry: ConfigSubentry,
-    ) -> None:
-        """Initialize the entity."""
-        super().__init__(entry, subentry)
-        self._attr_name = subentry.title
+    def __init__(self, entry: ConfigEntry) -> None:
+        self.entry = entry
+
+        self._attr_unique_id = f"{entry.entry_id}_tts"
+
+        self._attr_device_info = dr.DeviceInfo(
+            identifiers={(DOMAIN, entry.entry_id)},
+            name="AI Gateway",
+            manufacturer="AI Gateway",
+            model="Mock",
+            entry_type=dr.DeviceEntryType.SERVICE,
+        )
 
     @callback
     @override
@@ -88,7 +83,7 @@ class AIGatewayTTSEntity(TextToSpeechEntity, AIGatewayBaseEntity):
         language: str,
         options: dict[str, Any],
     ) -> TtsAudioType:
-        """Return one second of silent WAV audio."""
+        """Return one second of sine WAV audio."""
 
         return (
             "wav",
