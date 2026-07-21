@@ -1,0 +1,11 @@
+{
+  "domain": "ai_gateway",
+  "name": "AI Gateway",
+  "version": "0.0.1",
+  "config_flow": true,
+  "documentation": "https://github.com/yourname/ha-ai-gateway",
+  "issue_tracker": "https://github.com/yourname/ha-ai-gateway/issues",
+  "codeowners": ["@yourname"],
+  "requirements": [],
+  "iot_class": "local_push"
+}
