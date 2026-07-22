@@ -5,6 +5,7 @@ from __future__ import annotations
 import wave
 
 from collections.abc import AsyncIterable
+from functools import partial
 
 from homeassistant.components import stt
 from homeassistant.config_entries import ConfigEntry
@@ -106,5 +107,5 @@ class AIGatewaySTTEntity(stt.SpeechToTextEntity, AIGatewayBaseEntity):
 
         return stt.SpeechResult(
             text="This is a mock transcription.",
-            state=stt.SpeechResultState.SUCCESS,
+            result=stt.SpeechResultState.SUCCESS,
         )
