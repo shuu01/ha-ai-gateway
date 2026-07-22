@@ -12,6 +12,10 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import DOMAIN
+from .base import AIGatewayBaseEntity
+import logging
+
+logger = logging.getLogger(__name__)
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -22,13 +26,14 @@ async def async_setup_entry(
 
     async_add_entities([AIGatewayConversationEntity(entry)])
 
-class AIGatewayConversationEntity(conversation.ConversationEntity):
+class AIGatewayConversationEntity(conversation.ConversationEntity, AIGatewayBaseEntity):
     """Mock conversation agent."""
 
     _attr_has_entity_name = True
     _attr_name = "Conversation"
 
     def __init__(self, entry: ConfigEntry) -> None:
+        super().__init__(entry)
         self.entry = entry
 
         self._attr_unique_id = f"{entry.entry_id}_conversation"
@@ -45,7 +50,9 @@ class AIGatewayConversationEntity(conversation.ConversationEntity):
     def supported_languages(self) -> list[str] | Literal["*"]:
         return MATCH_ALL
 
-    async def _mock_stream(self):
+    async def _mock_stream(self, prompt: str):
+        logger.warning("LLM received: %s", prompt)
+
         yield {
             "role": "assistant",
             "content": "Hello from AI Gateway.",
@@ -59,7 +66,7 @@ class AIGatewayConversationEntity(conversation.ConversationEntity):
 
         async for _ in chat_log.async_add_delta_content_stream(
             self.entity_id,
-            self._mock_stream(),
+            self._mock_stream(user_input.text),
         ):
             pass
 

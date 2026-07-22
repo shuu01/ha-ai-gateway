@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import wave
+
 from collections.abc import AsyncIterable
 
 from homeassistant.components import stt
@@ -11,6 +13,10 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import DOMAIN
+from .base import AIGatewayBaseEntity
+import logging
+
+logger = logging.getLogger(__name__)
 
 SUPPORTED_LANGUAGES = ["en-US"]
 
@@ -24,7 +30,7 @@ async def async_setup_entry(
     async_add_entities([AIGatewaySTTEntity(entry)])
 
 
-class AIGatewaySTTEntity(stt.SpeechToTextEntity):
+class AIGatewaySTTEntity(stt.SpeechToTextEntity, AIGatewayBaseEntity):
     """Mock STT provider."""
 
     _attr_has_entity_name = True
@@ -74,8 +80,29 @@ class AIGatewaySTTEntity(stt.SpeechToTextEntity):
     ) -> stt.SpeechResult:
         """Mock transcription."""
 
-        async for _ in stream:
-            pass
+        audio = bytearray()
+        count = 0
+        total = 0
+
+        async for chunk in stream:
+            audio.extend(chunk)
+            count += 1
+            total += len(chunk)
+
+        logger.warning(f"Received {count} chunks ({total} bytes)")
+        logger.warning(
+            f"format={metadata.format}\n"
+            f"codec={metadata.codec}\n"
+            f"sample_rate={metadata.sample_rate}\n"
+            f"bit_rate={metadata.bit_rate}\n"
+            f"channels={metadata.channel}"
+        )
+
+        with wave.open("/config/test.wav", "wb") as wav:
+            wav.setnchannels(metadata.channel.value)
+            wav.setsampwidth(metadata.bit_rate.value // 8)
+            wav.setframerate(metadata.sample_rate.value)
+            wav.writeframes(audio)
 
         return stt.SpeechResult(
             text="This is a mock transcription.",

@@ -74,10 +74,10 @@ Piper
 
 ## Roadmap
 
-- [ ] Config flow
-- [ ] Mock STT provider
-- [ ] Mock Conversation provider
-- [ ] Mock TTS provider
+- [x] Config flow
+- [x] Mock STT provider
+- [x] Mock Conversation provider
+- [x] Mock TTS provider
 - [ ] Groq STT
 - [ ] Faster Whisper
 - [ ] OpenAI Conversation

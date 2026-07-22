@@ -4,13 +4,7 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, override
 from propcache.api import cached_property
 
-from homeassistant.components.tts import (
-    ATTR_PREFERRED_FORMAT,
-    ATTR_VOICE,
-    TextToSpeechEntity,
-    TtsAudioType,
-    Voice,
-)
+from homeassistant.components import tts
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -19,7 +13,9 @@ from homeassistant.helpers import device_registry as dr
 from .const import DOMAIN
 from .base import AIGatewayBaseEntity
 from .audio import generate_sine_wav
+import logging
 
+logger = logging.getLogger(__name__)
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -30,7 +26,7 @@ async def async_setup_entry(
 
     async_add_entities([AIGatewayTTSEntity(entry)])
 
-class AIGatewayTTSEntity(TextToSpeechEntity, AIGatewayBaseEntity):
+class AIGatewayTTSEntity(tts.TextToSpeechEntity, AIGatewayBaseEntity):
     """Mock AI Gateway TTS entity."""
 
     _attr_has_entity_name = False
@@ -40,12 +36,12 @@ class AIGatewayTTSEntity(TextToSpeechEntity, AIGatewayBaseEntity):
     _attr_default_language = "en-US"
 
     _attr_supported_options = [
-        ATTR_VOICE,
-        ATTR_PREFERRED_FORMAT,
+        tts.ATTR_VOICE,
+        tts.ATTR_PREFERRED_FORMAT,
     ]
 
     _supported_voices = [
-        Voice("default", "Default"),
+        tts.Voice("default", "Default"),
     ]
 
     def __init__(self, entry: ConfigEntry) -> None:
@@ -63,7 +59,7 @@ class AIGatewayTTSEntity(TextToSpeechEntity, AIGatewayBaseEntity):
 
     @callback
     @override
-    def async_get_supported_voices(self, language: str) -> list[Voice]:
+    def async_get_supported_voices(self, language: str) -> list[tts.Voice]:
         """Return supported voices."""
         return self._supported_voices
 
@@ -72,8 +68,8 @@ class AIGatewayTTSEntity(TextToSpeechEntity, AIGatewayBaseEntity):
     def default_options(self) -> Mapping[str, Any]:
         """Return default TTS options."""
         return {
-            ATTR_VOICE: "default",
-            ATTR_PREFERRED_FORMAT: "wav",
+            tts.ATTR_VOICE: "default",
+            tts.ATTR_PREFERRED_FORMAT: "wav",
         }
 
     @override
@@ -82,8 +78,9 @@ class AIGatewayTTSEntity(TextToSpeechEntity, AIGatewayBaseEntity):
         message: str,
         language: str,
         options: dict[str, Any],
-    ) -> TtsAudioType:
+    ) -> tts.TtsAudioType:
         """Return one second of sine WAV audio."""
+        logger.warning("TTS received: %s", message)
 
         return (
             "wav",

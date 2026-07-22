@@ -3,8 +3,8 @@ from __future__ import annotations
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from core.registry import ProviderRegistry
-from core.router import Router
+from .core.registry import ProviderRegistry
+from .core.router import Router
 
 
 class AIGatewayRuntime:
