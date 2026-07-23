@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Literal
+import random
 
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
