@@ -75,7 +75,7 @@ class AIGatewayConversationEntity(conversation.ConversationEntity, AIGatewayBase
             chat_log,
         )
         logger.warning(f"Conversation result: {result}")
-        logger.warning(f"Speech: {result.respose.speech}")
+        logger.warning(f"Speech: {result.response.speech}")
         logger.warning(f"Response dict: {result.response.as_dict()}")
 
         return result
