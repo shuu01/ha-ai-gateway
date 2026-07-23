@@ -30,6 +30,18 @@ async def async_setup_entry(
 
     async_add_entities([AIGatewaySTTEntity(entry)])
 
+def _write_wav_file(
+    path: str,
+    metadata: stt.SpeechMetadata,
+    audio: bytes,
+) -> None:
+    """Write audio to a WAV file."""
+    with wave.open(path, "wb") as wav:
+        wav.setnchannels(metadata.channel.value)
+        wav.setsampwidth(metadata.bit_rate.value // 8)
+        wav.setframerate(metadata.sample_rate.value)
+        wav.writeframes(audio)
+
 
 class AIGatewaySTTEntity(stt.SpeechToTextEntity, AIGatewayBaseEntity):
     """Mock STT provider."""
@@ -74,21 +86,38 @@ class AIGatewaySTTEntity(stt.SpeechToTextEntity, AIGatewayBaseEntity):
     def supported_channels(self) -> list[stt.AudioChannels]:
         return [stt.AudioChannels.CHANNEL_MONO]
 
+
     async def async_process_audio_stream(
         self,
         metadata: stt.SpeechMetadata,
         stream: AsyncIterable[bytes],
     ) -> stt.SpeechResult:
-        """Mock transcription."""
+        """Proxy transcription."""
 
         audio = bytearray()
         count = 0
         total = 0
 
-        async for chunk in stream:
-            audio.extend(chunk)
-            count += 1
-            total += len(chunk)
+        async def proxy_stream() -> AsyncIterable[bytes]:
+            nonlocal count, total
+
+            async for chunk in stream:
+                audio.extend(chunk)
+                count += 1
+                total += len(chunk)
+                yield chunk
+
+        #
+        # TODO:
+        # result = await upstream_provider.internal_async_process_audio_stream(
+        #     metadata,
+        #     proxy_stream(),
+        # )
+        #
+        # For now we simply consume the stream.
+        #
+        async for _ in proxy_stream():
+            pass
 
         logger.warning(f"Received {count} chunks ({total} bytes)")
         logger.warning(
@@ -99,11 +128,14 @@ class AIGatewaySTTEntity(stt.SpeechToTextEntity, AIGatewayBaseEntity):
             f"channels={metadata.channel}"
         )
 
-        with wave.open("/config/test.wav", "wb") as wav:
-            wav.setnchannels(metadata.channel.value)
-            wav.setsampwidth(metadata.bit_rate.value // 8)
-            wav.setframerate(metadata.sample_rate.value)
-            wav.writeframes(audio)
+        await self.hass.async_add_executor_job(
+            partial(
+                _write_wav_file,
+                "/config/test.wav",
+                metadata,
+                bytes(audio),
+            )
+        )
 
         return stt.SpeechResult(
             text="This is a mock transcription.",
