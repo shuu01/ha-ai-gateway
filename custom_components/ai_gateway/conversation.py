@@ -70,7 +70,10 @@ class AIGatewayConversationEntity(conversation.ConversationEntity, AIGatewayBase
         ):
             pass
 
-        return conversation.async_get_result_from_chat_log(
+        result = conversation.async_get_result_from_chat_log(
             user_input,
             chat_log,
         )
+        logger.warning(f"Conversation result: {result}")
+
+        return result

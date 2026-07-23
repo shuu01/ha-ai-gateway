@@ -92,7 +92,7 @@ class AIGatewaySTTEntity(stt.SpeechToTextEntity, AIGatewayBaseEntity):
         metadata: stt.SpeechMetadata,
         stream: AsyncIterable[bytes],
     ) -> stt.SpeechResult:
-        """Proxy transcription."""
+        """Mock transcription."""
 
         audio = bytearray()
         count = 0
