@@ -55,7 +55,7 @@ class AIGatewayConversationEntity(conversation.ConversationEntity, AIGatewayBase
 
         yield {
             "role": "assistant",
-            "content": "Hello from AI Gateway.",
+            "content": "This is a mock llm response.",
         }
 
     async def _async_handle_message(

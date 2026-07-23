@@ -29,7 +29,7 @@ async def async_setup_entry(
 class AIGatewayTTSEntity(tts.TextToSpeechEntity, AIGatewayBaseEntity):
     """Mock AI Gateway TTS entity."""
 
-    _attr_has_entity_name = False
+    _attr_has_entity_name = True
     _attr_name = "Text-to-speech"
 
     _attr_supported_languages = ["en-US"]
@@ -80,7 +80,7 @@ class AIGatewayTTSEntity(tts.TextToSpeechEntity, AIGatewayBaseEntity):
         options: dict[str, Any],
     ) -> tts.TtsAudioType:
         """Return one second of sine WAV audio."""
-        logger.warning("TTS received: %s", message)
+        logger.warning(f"TTS received: {message}")
 
         return (
             "wav",
