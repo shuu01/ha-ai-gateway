@@ -9,5 +9,45 @@
         "description": "Install AI Gateway."
       }
     }
+  },
+  "config_subentries": {
+    "stt": {
+      "entry_type": "Speech-to-text provider",
+      "abort": {
+        "entry_not_loaded": "The AI Gateway entry is not loaded.",
+        "reconfigure_successful": "The AI Gateway entry has been updated."
+      },
+      "initiate_flow": {
+        "reconfigure": "Reconfigure speech-to-text provider",
+        "user": "Add speech-to-text provider"
+      },
+      "step": {
+        "init": {
+          "title": "AI Gateway",
+          "description": "Add or edit an STT provider.",
+          "data": {
+            "provider_type": "Provider type",
+            "endpoint": "Endpoint",
+            "api_key": "API key",
+            "model": "Model",
+            "weight": "Weight",
+            "prompt": "Prompt"
+          },
+          "data_description": {
+            "endpoint": "Base URL of an OpenAI compatible API, for example https://api.openai.com/v1.",
+            "api_key": "Leave empty when the endpoint does not require authentication.",
+            "weight": "Higher weights are tried first. Equal weights fall back to configuration order.",
+            "prompt": "Optional prompt to improve transcript quality."
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "provider_type": {
+      "options": {
+        "openai_compatible": "OpenAI compatible"
+      }
+    }
   }
 }

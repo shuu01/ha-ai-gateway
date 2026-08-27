@@ -4,7 +4,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.const import Platform
 
-from .const import DOMAIN
+from .runtime import AIGatewayRuntime
+
 PLATFORMS = (
     Platform.CONVERSATION,
     Platform.STT,
@@ -20,7 +21,7 @@ async def async_setup(
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    entry.runtime_data = None
+    entry.runtime_data = AIGatewayRuntime(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
