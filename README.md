@@ -78,6 +78,7 @@ Piper
 - [x] Mock STT provider
 - [x] Mock Conversation provider
 - [x] Mock TTS provider
+- [x] OpenAI STT
 - [ ] Groq STT
 - [ ] Faster Whisper
 - [ ] OpenAI Conversation
