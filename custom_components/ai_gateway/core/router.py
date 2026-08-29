@@ -26,6 +26,10 @@ class Router:
         self.last_provider: str | None = None
         self.last_error: str | None = None
 
+    def update_registry(self, registry: ProviderRegistry) -> None:
+        """Re-point the router at a rebuilt registry, preserving state."""
+        self._registry = registry
+
     def candidates(self, **capabilities: Any) -> list:
         """Return healthy, capable providers sorted by weight descending."""
         providers = [

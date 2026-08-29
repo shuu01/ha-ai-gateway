@@ -1,7 +1,8 @@
 """Provider registry: holds every provider for an entry and builds adapters.
 
-Built from config subentries at setup time; rebuilding happens when the
-entry is reloaded after a subentry add/reconfigure/delete.
+Built from config subentries at setup time; the runtime rebuilds it in
+place when a subentry is added/reconfigured/deleted (see
+:meth:`AIGatewayRuntime.rebuild`).
 """
 
 from __future__ import annotations

@@ -10,7 +10,7 @@ Home Assistant custom component (HACS integration) providing STT, Conversation, 
 
 ## Architecture state
 
-- STT is implemented end-to-end (OpenSpec change `stt-provider-pool` in the `private` store; all tasks done except manual HA verification 6.1–6.4):
+- STT is implemented end-to-end (OpenSpec change `stt-provider-pool`; all tasks done except manual HA verification 6.1–6.4):
   - `core/errors.py` — typed exception hierarchy (`ProviderError` + subclasses, `AllProvidersFailed`).
   - `core/health.py` — `ProviderHealth` with per-error-type cooldowns (timeout 120s, network/server/invalid-response 300s, rate-limit/quota 1h, auth permanent `None`); not persisted.
   - `core/provider.py` — abstract `Provider` (identity, `weight`, `enabled`, `supported_languages`/`supported_formats`, `supports()`, abstract `async transcribe(metadata, audio)`).
@@ -28,7 +28,7 @@ Home Assistant custom component (HACS integration) providing STT, Conversation, 
 
 ## Development workflow
 
-- Changes are spec-driven via OpenSpec (`schema: spec-driven`). Planning is fully externalized to the registered **`private` store** (`openspec/` in this repo is only a `store: private` pointer; real specs/changes live in `~/openspec/openspec/`). Commands run here resolve to the store automatically. Workflows/skills live in `.github/prompts/` and `.github/skills/` (`opsx-propose`, `opsx-apply`, etc.). The old `.opencode/` copies are deleted — use the `.github/` ones.
+- Changes are spec-driven via OpenSpec (`schema: spec-driven`). Planning is local to this repo at `openspec/` (config, specs, changes); commands run here resolve locally. The OpenSpec workflow skills are installed globally at `~/.opencode/skills/` (`opsx-propose`, `opsx-apply`, etc.) rather than in `.github/`.
 - Current change in flight: `stt-provider-pool` (tasks.md 1.1–5.4 done; 6.1–6.4 manual HA verification pending). Implement only tasks from the change's `tasks.md`; update checkboxes as you finish.
 - No CI, no tests, no linter/formatter/typecheck config, no `pyproject.toml`/`setup.cfg`. Verification is manual: install by copying `custom_components/ai_gateway` into HA's `custom_components` dir and restart HA.
 - If adding a new `strings.json` entry, mirror it in `translations/en.json` (they are currently identical).

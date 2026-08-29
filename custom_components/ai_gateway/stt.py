@@ -31,13 +31,14 @@ async def async_setup_entry(
 ) -> None:
     """Set up the AI Gateway STT proxy entity."""
     runtime: AIGatewayRuntime = entry.runtime_data
-    if runtime.router("stt") is None:
-        return
     async_add_entities([AIGatewaySTTEntity(runtime)])
 
 
 class AIGatewaySTTEntity(stt.SpeechToTextEntity, AIGatewayBaseEntity):
-    """Proxy STT entity routing transcription to the provider pool."""
+    """Proxy STT entity routing transcription to the provider pool.
+
+    Always registered, even when the pool is empty (then `unavailable`).
+    """
 
     _attr_name = "Speech-to-text"
 
@@ -45,6 +46,11 @@ class AIGatewaySTTEntity(stt.SpeechToTextEntity, AIGatewayBaseEntity):
         super().__init__(entry=runtime.entry)
         self._runtime = runtime
         self._attr_unique_id = f"{runtime.entry.entry_id}_stt"
+        runtime.add_state_listener(self.async_write_ha_state)
+
+    @property
+    def available(self) -> bool:
+        return bool(self.supported_languages)
 
     @property
     def supported_languages(self) -> list[str]:
@@ -71,9 +77,12 @@ class AIGatewaySTTEntity(stt.SpeechToTextEntity, AIGatewayBaseEntity):
         return [stt.AudioChannels.CHANNEL_MONO]
 
     @property
-    def extra_state_attributes(self) -> dict[str, str | None]:
+    def extra_state_attributes(self) -> dict[str, str | int | None]:
         router = self._runtime.router("stt")
         return {
+            "provider_count": len(
+                self._runtime.registry.providers("stt")
+            ),
             "last_provider": router.last_provider if router else None,
             "last_error": router.last_error if router else None,
         }
@@ -84,6 +93,13 @@ class AIGatewaySTTEntity(stt.SpeechToTextEntity, AIGatewayBaseEntity):
         stream: AsyncIterable[bytes],
     ) -> stt.SpeechResult:
         """Buffer the PCM stream and route transcription to the pool."""
+        router = self._runtime.router("stt")
+        if router is None:
+            _LOGGER.warning("STT requested with no providers configured")
+            return stt.SpeechResult(
+                text=None, result=stt.SpeechResultState.ERROR
+            )
+
         pcm = bytearray()
         for chunk in stream:
             if len(pcm) + len(chunk) > MAX_AUDIO_BUFFER_BYTES:
@@ -98,7 +114,6 @@ class AIGatewaySTTEntity(stt.SpeechToTextEntity, AIGatewayBaseEntity):
 
         wav_bytes = _wrap_wav(metadata, bytes(pcm))
 
-        router = self._runtime.router("stt")
         try:
             text = await router.run(
                 "transcribe",
