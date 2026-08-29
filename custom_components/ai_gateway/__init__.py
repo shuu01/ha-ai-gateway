@@ -5,7 +5,7 @@ from homeassistant.config_entries import (
     ConfigEntryChange,
     SIGNAL_CONFIG_ENTRY_CHANGED,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import Platform
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
@@ -30,6 +30,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.runtime_data = runtime
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    @callback
     def on_entry_changed(change: ConfigEntryChange, changed_entry: ConfigEntry) -> None:
         if change is not ConfigEntryChange.UPDATED:
             return
