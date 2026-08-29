@@ -155,7 +155,7 @@ class OpenAICompatibleProvider(Provider):
     ) -> str:
         """Upload the audio and return the transcript text."""
         session = async_get_clientsession(self._hass)
-        url = f"{self._endpoint}/v1/audio/transcriptions"
+        url = f"{self._endpoint}/audio/transcriptions"
 
         form = aiohttp.FormData()
         form.add_field("model", self._model)

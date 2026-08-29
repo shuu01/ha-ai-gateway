@@ -34,7 +34,7 @@
             "prompt": "Prompt"
           },
           "data_description": {
-            "endpoint": "Base URL of an OpenAI compatible API, for example https://api.openai.com/v1.",
+            "endpoint": "Base URL of an OpenAI compatible API including the /v1 path, e.g. https://api.openai.com/v1, https://api.groq.com/openai/v1, or https://openrouter.ai/api/v1.",
             "api_key": "Leave empty when the endpoint does not require authentication.",
             "weight": "Higher weights are tried first. Equal weights fall back to configuration order.",
             "prompt": "Optional prompt to improve transcript quality."

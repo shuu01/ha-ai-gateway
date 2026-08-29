@@ -32,7 +32,7 @@ Each provider subentry carries its full identity — `{provider_type, endpoint, 
 - Alternative rejected: one config entry per provider — breaks the "one gateway" concept and the router would live across entries.
 
 ### D2: Direct aiohttp engine, not the openai SDK
-The `OpenAICompatibleProvider` posts multipart `/v1/audio/transcriptions` via HA's shared `async_get_clientsession` (pattern from `sfortis/openai_tts`).
+The `OpenAICompatibleProvider` posts multipart to `{endpoint}/audio/transcriptions` via HA's shared `async_get_clientsession` (pattern from `sfortis/openai_tts`). The `endpoint` value is the full OpenAI-compatible base **including** `/v1` (e.g. `https://api.openai.com/v1`, Groq `https://api.groq.com/openai/v1`, OpenRouter `https://openrouter.ai/api/v1`), matching the SDK/`open_router` convention; the provider appends only `/audio/transcriptions`.
 
 - Rationale: one engine serves Groq, OpenRouter, Mistral, Ollama, LiteLLM, and self-hosted faster-whisper-server without pinning the `openai` package; supports per-endpoint quirks; keeps `manifest.json` `requirements` empty (aiohttp is a core HA dependency).
 - Alternative rejected: `openai.AsyncClient(api_key, base_url)` — HA core's approach, but it pins a dependency and is less flexible for arbitrary backends.
