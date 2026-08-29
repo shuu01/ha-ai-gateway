@@ -101,7 +101,7 @@ class AIGatewaySTTEntity(stt.SpeechToTextEntity, AIGatewayBaseEntity):
             )
 
         pcm = bytearray()
-        for chunk in stream:
+        async for chunk in stream:
             if len(pcm) + len(chunk) > MAX_AUDIO_BUFFER_BYTES:
                 _LOGGER.error(
                     "Audio stream exceeds the %d byte buffer cap; aborting",
