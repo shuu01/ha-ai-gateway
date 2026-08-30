@@ -41,6 +41,15 @@ class ProviderInvalidResponseError(ProviderError):
     """The provider returned an unusable response."""
 
 
+class ProviderConfigError(ProviderError):
+    """The provider is unreachable as configured (e.g. HTTP 404).
+
+    Almost always a configuration error: wrong base URL, missing path, or
+    a model id the endpoint does not expose. Treated as permanent (like
+    auth) until the provider is reconfigured or restarted.
+    """
+
+
 class AllProvidersFailed(ProviderError):
     """Every candidate provider failed.
 

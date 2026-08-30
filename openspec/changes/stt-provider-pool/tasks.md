@@ -6,8 +6,9 @@
 ## 2. Provider adapter contract
 
 - [x] 2.1 Create `core/provider.py` with abstract `Provider` base: identity (`unique_id`, `name`), routing knobs (`weight`, `enabled`), capabilities (`supported_languages`, `supported_formats`, `supports(language)`), and `async transcribe(metadata, audio)` raising typed errors
-- [x] 2.2 Create `core/providers/openai_compatible.py` with `OpenAICompatibleProvider`: aiohttp multipart POST to `{endpoint}/v1/audio/transcriptions` via HA's shared session, HTTP-status → typed error classification (401/403 auth, 402 quota, 429 with `insufficient_quota` → quota, 429 → rate limit, 5xx → server, network → network), timeout handling, model + language + prompt fields
+- [x] 2.2 Create `core/providers/openai_compatible.py` with `OpenAICompatibleProvider`: aiohttp multipart POST to `{endpoint}/audio/transcriptions` via HA's shared session, HTTP-status → typed error classification (401/403 auth, 402 quota, 429 with `insufficient_quota` → quota, 429 → rate limit, 5xx → server, network → network), timeout handling, model + language + prompt fields
 - [x] 2.3 Add `provider_factory(subentry, hass)` dispatch in `core/registry.py` (provider_type → adapter class; unknown type raises)
+- [x] 2.4 Treat HTTP 404 as a config failure (D12): add `ProviderConfigError` to `core/errors.py`, add `ProviderConfigError: None` to the cooldown table in `core/health.py`, and map 404 → `ProviderConfigError` with an actionable message (incl. body snippet) in `core/providers/openai_compatible.py`
 
 ## 3. Registry and router
 

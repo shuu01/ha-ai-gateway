@@ -43,7 +43,7 @@ The router SHALL consider only providers that are enabled, currently healthy, an
 - **THEN** the request fails and the last error is recorded for diagnostics
 
 ### Requirement: Provider health and cooldowns
-After a provider fails, it SHALL be excluded from routing for a duration that depends on the error type: timeout 120 seconds, connection/network 300 seconds, server (5xx) 300 seconds, invalid response 300 seconds, rate limit 1 hour, quota 1 hour. Authentication failures SHALL exclude the provider until it is reconfigured or the integration restarts. A successful request SHALL clear the provider's failure state. Failure of one provider SHALL NOT affect other providers or the gateway itself.
+After a provider fails, it SHALL be excluded from routing for a duration that depends on the error type: timeout 120 seconds, connection/network 300 seconds, server (5xx) 300 seconds, invalid response 300 seconds, rate limit 1 hour, quota 1 hour. Authentication and configuration failures (e.g. HTTP 404) SHALL exclude the provider until it is reconfigured or the integration restarts. A successful request SHALL clear the provider's failure state. Failure of one provider SHALL NOT affect other providers or the gateway itself.
 
 #### Scenario: Timeout triggers cooldown
 - **WHEN** a provider times out on a request
@@ -61,8 +61,12 @@ After a provider fails, it SHALL be excluded from routing for a duration that de
 - **WHEN** a provider fails authentication
 - **THEN** it is not considered for routing again until reconfigured or restarted, while other providers keep working
 
+#### Scenario: Config error (404) disables provider
+- **WHEN** a provider returns HTTP 404 (e.g. wrong base URL or unknown model)
+- **THEN** it is classified as a configuration failure, is not considered for routing again until reconfigured or restarted, and the error message identifies the likely misconfiguration
+
 ### Requirement: Error classification
-Provider failures SHALL be classified so that permanent failures (authentication, quota) are distinguished from transient ones (timeout, connection, rate limit, server, invalid response). A quota error SHALL be recognized both from HTTP 402 and from a 429 response carrying an `insufficient_quota` marker.
+Provider failures SHALL be classified so that permanent failures (authentication, quota, configuration) are distinguished from transient ones (timeout, connection, rate limit, server, invalid response). A quota error SHALL be recognized both from HTTP 402 and from a 429 response carrying an `insufficient_quota` marker. A 404 SHALL be classified as a configuration failure with an actionable message.
 
 #### Scenario: Quota detection from 429
 - **WHEN** an upstream returns HTTP 429 with an `insufficient_quota` body marker

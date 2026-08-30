@@ -80,6 +80,14 @@ Bump `VERSION` to 2 and support only v2 going forward: no `async_migrate_entry`.
 ### D11: Buffer cap
 `MAX_AUDIO_BUFFER_BYTES` ≈ 60s of 16 kHz 16-bit mono PCM (~1.9 MB). When the cap is hit, transcribe what was buffered rather than error. With `requires_external_vad=True` (the STT default we inherit), HA's VAD normally ends the stream; the cap is a safety net for stuck-mic/VAD-failure cases.
 
+### D12: HTTP 404 is a permanent config failure, not a transient blip
+A 404 from `{endpoint}/audio/transcriptions` is virtually always a configuration error — wrong base URL (missing `/v1`, e.g. `https://api.groq.com` instead of `https://api.groq.com/openai/v1`), a path the endpoint doesn't expose, or a model id that doesn't exist. It is not transient and does not self-heal, so it must not be treated as a 300s blip:
+
+- **Add `ProviderConfigError(ProviderError)`** so a 404 has a distinct semantic type instead of collapsing to the generic base `ProviderError`.
+- **Cooldown `None` (permanent disable), like auth** in the `COOLDOWNS` table. After one 404 the provider is skipped in `candidates()`, so subsequent requests fail over straight to a healthy provider (no recurring 404 round-trip every 5 minutes). Recovery is via reconfigure/restart, which rebuilds providers with fresh health — already covered by the in-place rebuild (D4) and the subentry flows (D8).
+- **Actionable message** including the provider's body snippet: "HTTP 404: endpoint or model not found. Verify the base URL includes /v1 (e.g. https://api.groq.com/openai/v1) and the model id. Provider: {snippet}". This flows through `last_error`, the cooldown log, and `AllProvidersFailed`.
+- Conservative alternative (rejected for v1): a long-but-non-permanent cooldown (e.g. 1h) to cover the rare case of a backend briefly 404ing during its own redeploy. 404 semantics do not self-heal, so permanent disable is preferred; 5xx stays transient.
+
 ## Risks / Trade-offs
 
 - **Single 429 → 1h cooldown is aggressive** (a flapping backend is skipped for an hour) → the health model records consecutive failures, so an "N failures in 5 min" rule can be layered on later without structural change.

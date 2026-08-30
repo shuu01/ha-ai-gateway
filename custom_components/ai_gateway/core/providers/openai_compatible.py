@@ -19,6 +19,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from ..errors import (
     ProviderAuthError,
+    ProviderConfigError,
     ProviderError,
     ProviderInvalidResponseError,
     ProviderNetworkError,
@@ -111,6 +112,15 @@ def _classify_http_error(status: int, body_snippet: str = "") -> ProviderError:
                 "Quota exhausted (HTTP 429, insufficient_quota)"
             )
         return ProviderRateLimitError(f"Rate limit hit (HTTP {status})")
+    if status == 404:
+        detail = (
+            f" Provider said: {body_snippet}" if body_snippet else ""
+        )
+        return ProviderConfigError(
+            "HTTP 404: endpoint or model not found. Verify the base URL "
+            "includes /v1 (e.g. https://api.groq.com/openai/v1) and that "
+            f"the model id is correct.{detail}"
+        )
     if status >= 500:
         return ProviderServerError(f"Provider server error (HTTP {status})")
     return ProviderError(f"Unexpected provider error (HTTP {status})")

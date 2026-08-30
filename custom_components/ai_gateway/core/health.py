@@ -13,6 +13,7 @@ import time
 
 from .errors import (
     ProviderAuthError,
+    ProviderConfigError,
     ProviderError,
     ProviderInvalidResponseError,
     ProviderNetworkError,
@@ -34,6 +35,7 @@ COOLDOWNS: dict[type[ProviderError], int | None] = {
     ProviderRateLimitError: 3600,
     ProviderQuotaError: 3600,
     ProviderAuthError: None,
+    ProviderConfigError: None,
 }
 
 # Fallback for error types not explicitly listed (e.g. unexpected status).
